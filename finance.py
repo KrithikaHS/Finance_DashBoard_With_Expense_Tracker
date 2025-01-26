@@ -38,40 +38,97 @@ app = dash.Dash(__name__, server=server, external_stylesheets=external_styleshee
 app.title = 'Expense Tracker and Financial Dashboard'
 
 # Layout
-app.layout = html.Div(style={'backgroundColor': colors['background'],'color': colors['color'],'fontFamily': font_family},children=[
-    html.H1("Personal Finance Dashboard With Expense Tracker",style={'color': 'white', 'text-align': 'center','font-family':'Serif','padding':'30px'}),
+app.layout = html.Div(style={'backgroundColor': colors['background'],'color': colors['color'],'fontFamily': font_family}, children=[
+    html.H1("Personal Finance Dashboard With Expense Tracker", style={
+        'color': 'white', 
+        'text-align': 'center',
+        'font-family': 'Serif',
+        'padding': '30px'
+    }),
 
-    dcc.Tabs([
-        dcc.Tab(label='New Expense', id="Newview",style={'backgroundColor': colors['background'],'color': colors['color']}, children=[
-            html.Div([ 
-                
-                html.Label('Date of the Expense (yyyy-mm-dd):',style={'font-family':'Verdana','margin-left':'550px','margin-top':'40px','font-size':'30px'}),html.Br(),
-                dcc.Input(id='Date', type='text', value='', placeholder="0000-00-00",style={'margin-bottom': '10px','margin-left':'550px','border-radius':'20px','padding':'20px','width':'350px'}), html.Br(),
-                html.Label('Description of the Expense:',style={'font-family':'Verdana','margin-left':'550px','font-size':'30px'}),html.Br(),
-                dcc.Input(id='description', type='text', value="", placeholder="What did you buy?",style={'margin-bottom': '20px','margin-left':'550px','border-radius':'20px','padding':'20px','width':'350px'}), html.Br(),
-                html.Label('Category:',style={'font-family':'Verdana','margin-left':'550px','font-size':'30px'}),html.Br(),
-                dcc.Input(id='CATEGORY', type='text', value="", placeholder='Category please!',style={'margin-bottom': '20px','margin-left':'550px','border-radius':'20px','padding':'20px','width':'350px'}), html.Br(),
-                html.Label('Price of the Expense:',style={'font-family':'Verdana','margin-left':'550px','font-size':'30px'}),html.Br(),
-                dcc.Input(id='price', type="number", value="", placeholder="0.00",style={'margin-bottom': '20px','margin-left':'550px','border-radius':'20px','padding':'20px','width':'350px'}), html.Br(),
-                html.Button('Track', id='submit-button', n_clicks=0,style={'margin-left':'550px','margin-top':'30px','margin-bottom':'200px','border-radius':'20px','padding':'20px','width':'350px','background-color':'black','color':'white','font-size':'25px'}),
-            ], )           
-        ]
-      
-        ),
-        dcc.Tab(label='View Expenses', id="viewview",style={'backgroundColor': colors['background'],'color': colors['color']}, children=[
-            
-            html.Div([
-                dcc.RadioItems(id='view-selector',style={'font-family':'Verdana','font-size':'30px','margin-left':'400px','margin-bottom':'20px','margin-top':'30px'},
-                               options=[
-                                   {'label': 'View all expenses', 'value': 'all'},
-                                   {'label': 'View monthly expenses by category', 'value': 'monthly'},
-                               ],
-                               value='all'
-                               ),
-                html.Div(id='expense-table',style={'font-family':'Verdana','font-size':'30px','margin-left':'400px','textAlign': 'center','margin-bottom':'100px'}),
-                
-                html.Div(id='some-output-element',style={'font-family':'Verdana','font-size':'30px','margin-left':'550px','margin-bottom':'10px'}),
-                
+    dcc.Tabs(style={
+        'maxWidth': '1200px', 
+        'margin': '0 auto'
+    }, children=[
+        dcc.Tab(label='New Expense', id="Newview", style={'backgroundColor': colors['background'], 'color': colors['color']}, children=[
+            html.Div(style={
+                'display': 'flex', 
+                'flexDirection': 'column', 
+                'alignItems': 'center', 
+                'padding': '20px'
+            }, children=[ 
+                html.Label('Date of the Expense (yyyy-mm-dd):', style={'font-family':'Verdana','font-size':'20px'}),
+                dcc.Input(id='Date', type='text', placeholder="0000-00-00", style={
+                    'margin-bottom': '10px',
+                    'border-radius': '5px',
+                    'padding': '10px',
+                    'width': '90%',
+                    'maxWidth': '400px'
+                }), 
+                html.Label('Description of the Expense:', style={'font-family':'Verdana', 'font-size':'20px'}),
+                dcc.Input(id='description', type='text', placeholder="What did you buy?", style={
+                    'margin-bottom': '10px',
+                    'border-radius': '5px',
+                    'padding': '10px',
+                    'width': '90%',
+                    'maxWidth': '400px'
+                }), 
+                html.Label('Category:', style={'font-family':'Verdana', 'font-size':'20px'}),
+                dcc.Input(id='CATEGORY', type='text', placeholder='Category please!', style={
+                    'margin-bottom': '10px',
+                    'border-radius': '5px',
+                    'padding': '10px',
+                    'width': '90%',
+                    'maxWidth': '400px'
+                }), 
+                html.Label('Price of the Expense:', style={'font-family':'Verdana', 'font-size':'20px'}),
+                dcc.Input(id='price', type="number", placeholder="0.00", style={
+                    'margin-bottom': '20px',
+                    'border-radius': '5px',
+                    'padding': '10px',
+                    'width': '90%',
+                    'maxWidth': '400px'
+                }), 
+                html.Button('Track', id='submit-button', n_clicks=0, style={
+                    'margin-top': '20px',
+                    'border-radius': '5px',
+                    'padding': '10px',
+                    'width': '90%',
+                    'maxWidth': '400px',
+                    'background-color': 'black',
+                    'color': 'white',
+                    'font-size': '18px'
+                })
+            ])           
+        ]),
+
+        dcc.Tab(label='View Expenses', id="viewview", style={'backgroundColor': colors['background'], 'color': colors['color']}, children=[
+            html.Div(style={
+                'display': 'flex', 
+                'flexDirection': 'column', 
+                'alignItems': 'center', 
+                'padding': '20px'
+            }, children=[
+                dcc.RadioItems(id='view-selector', style={
+                    'font-family': 'Verdana', 
+                    'font-size': '20px',
+                    'margin-bottom': '20px'
+                },
+                options=[
+                    {'label': 'View all expenses', 'value': 'all'},
+                    {'label': 'View monthly expenses by category', 'value': 'monthly'},
+                ],
+                value='all'),
+
+                html.Div(id='expense-table', style={
+                    'font-family': 'Verdana',
+                    'font-size': '16px',
+                    'width': '90%',
+                    'maxWidth': '800px',
+                    'overflowX': 'auto',
+                    'margin-bottom': '20px'
+                }),
+                html.Div(id='some-output-element',style={'font-family':'Verdana','font-size':'30px'}),
             ])
         ]),
         dcc.Tab(label='Yearly Tansactions', id="yearview", style={'backgroundColor': colors['background'],'color': colors['color']},children=[
@@ -82,12 +139,22 @@ app.layout = html.Div(style={'backgroundColor': colors['background'],'color': co
         html.Div([html.H1("Price Based Dashboard"),
         dcc.Graph(id='graph_by_price', figure={'data': [], 'layout': {}},style={'margin-bottom':'200px'})]),
          ]),         
-        dcc.Tab(label='Category Based Pie Chart', id="catview",style={'backgroundColor': colors['background'],'color': colors['color']} ,children=[
-        html.Div([html.H1("Category Based Dashboard"),
-        dcc.Graph(id='pie_chart_category', figure={'data': [], 'layout': {}},style={'margin-left':'400px','margin-bottom':'200px','width': '800px', 'height': '800px'})]),
+        dcc.Tab(label='Category Based Pie Chart', id="catview", style={'backgroundColor': colors['background'], 'color': colors['color']}, children=[
+            html.Div(style={
+                'display': 'flex', 
+                'flexDirection': 'column', 
+                'alignItems': 'center', 
+                'padding': '20px'
+            }, children=[
+                dcc.Graph(id='pie_chart_category', style={
+                    'width': '100%', 
+                    'maxWidth': '700px', 
+                    'height': '400px'
+                })
+            ])
         ]),
-    ]),
     ])
+])
 
 
 
@@ -303,6 +370,7 @@ def handle_form_submission(n_clicks, date, description, category, price):
 
         conn.commit()
         formatted_message = (
+            
             f"Recent Expense:<br>"
             f"Date: {date}<br>"
             f"Description: {description}<br>"
