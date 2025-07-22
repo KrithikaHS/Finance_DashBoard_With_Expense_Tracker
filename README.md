@@ -8,8 +8,8 @@ For database maintenance, two.py offers functionalities to delete specific IDs f
 
 ### Preview
 
-![Dashboard UI](images/image1.png)
+![Image1](images/image1)
 
-![Pie Chart](images/image2.png)
+![Image2](images/image2)
 
 
