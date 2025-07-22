@@ -4,6 +4,10 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output, State
 import pandas as pd
+import re
+import dash_bootstrap_components as dbc
+from dash.exceptions import PreventUpdate
+
 external_stylesheets = ['https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css']
 colors={
 'background':'rgb(0,0,40)',
@@ -16,7 +20,7 @@ DATABASE = "expenses.db"
 def get_db():
     db = getattr(g, "_database", None)
     if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
+        db = g._database = sqlite3.connect(DATABASE, check_same_thread=False)
     return db
 
 def close_db(e=None):
@@ -38,119 +42,63 @@ app = dash.Dash(__name__, server=server, external_stylesheets=external_styleshee
 app.title = 'Expense Tracker and Financial Dashboard'
 
 # Layout
-app.layout = html.Div(style={'backgroundColor': colors['background'],'color': colors['color'],'fontFamily': font_family}, children=[
-    html.H1("Personal Finance Dashboard With Expense Tracker", style={
-        'color': 'white', 
-        'text-align': 'center',
-        'font-family': 'Serif',
-        'padding': '30px'
-    }),
+app.layout = html.Div(children=[
+    html.Div(id='alert-box'),
+    html.H1("Personal Finance Dashboard With Expense Tracker"),
 
-    dcc.Tabs(style={
-        'maxWidth': '1200px', 
-        'margin': '0 auto'
-    }, children=[
-        dcc.Tab(label='New Expense', id="Newview", style={'backgroundColor': colors['background'], 'color': colors['color']}, children=[
-            html.Div(style={
-                'display': 'flex', 
-                'flexDirection': 'column', 
-                'alignItems': 'center', 
-                'padding': '20px'
-            }, children=[ 
-                html.Label('Date of the Expense (yyyy-mm-dd):', style={'font-family':'Verdana','font-size':'20px'}),
-                dcc.Input(id='Date', type='text', placeholder="0000-00-00", style={
-                    'margin-bottom': '10px',
-                    'border-radius': '5px',
-                    'padding': '10px',
-                    'width': '90%',
-                    'maxWidth': '400px'
-                }), 
-                html.Label('Description of the Expense:', style={'font-family':'Verdana', 'font-size':'20px'}),
-                dcc.Input(id='description', type='text', placeholder="What did you buy?", style={
-                    'margin-bottom': '10px',
-                    'border-radius': '5px',
-                    'padding': '10px',
-                    'width': '90%',
-                    'maxWidth': '400px'
-                }), 
-                html.Label('Category:', style={'font-family':'Verdana', 'font-size':'20px'}),
-                dcc.Input(id='CATEGORY', type='text', placeholder='Category please!', style={
-                    'margin-bottom': '10px',
-                    'border-radius': '5px',
-                    'padding': '10px',
-                    'width': '90%',
-                    'maxWidth': '400px'
-                }), 
-                html.Label('Price of the Expense:', style={'font-family':'Verdana', 'font-size':'20px'}),
-                dcc.Input(id='price', type="number", placeholder="0.00", style={
-                    'margin-bottom': '20px',
-                    'border-radius': '5px',
-                    'padding': '10px',
-                    'width': '90%',
-                    'maxWidth': '400px'
-                }), 
-                html.Button('Track', id='submit-button', n_clicks=0, style={
-                    'margin-top': '20px',
-                    'border-radius': '5px',
-                    'padding': '10px',
-                    'width': '90%',
-                    'maxWidth': '400px',
-                    'background-color': 'black',
-                    'color': 'white',
-                    'font-size': '18px'
-                })
-            ])           
-        ]),
+    dcc.Tabs(className="dash-tabs", children=[
+        dcc.Tab(label='New Expense', id="Newview", className="dash-tab", children=[
+            html.Div(className='tab-content', children=[
+                html.Label('Date of the Expense (yyyy-mm-dd):'),
+                dcc.Input(id='Date', type='text', placeholder="0000-00-00"),
 
-        dcc.Tab(label='View Expenses', id="viewview", style={'backgroundColor': colors['background'], 'color': colors['color']}, children=[
-            html.Div(style={
-                'display': 'flex', 
-                'flexDirection': 'column', 
-                'alignItems': 'center', 
-                'padding': '20px'
-            }, children=[
-                dcc.RadioItems(id='view-selector', style={
-                    'font-family': 'Verdana', 
-                    'font-size': '20px',
-                    'margin-bottom': '20px'
-                },
-                options=[
-                    {'label': 'View all expenses', 'value': 'all'},
-                    {'label': 'View monthly expenses by category', 'value': 'monthly'},
-                ],
-                value='all'),
+                html.Label('Description of the Expense:'),
+                dcc.Input(id='description', type='text', placeholder="What did you buy?"),
 
-                html.Div(id='expense-table', style={
-                    'font-family': 'Verdana',
-                    'font-size': '16px',
-                    'width': '90%',
-                    'maxWidth': '800px',
-                    'overflowX': 'auto',
-                    'margin-bottom': '20px'
-                }),
-                html.Div(id='some-output-element',style={'font-family':'Verdana','font-size':'30px'}),
+                html.Label('Category:'),
+                dcc.Input(id='CATEGORY', type='text', placeholder='Category please!'),
+
+                html.Label('Price of the Expense:'),
+                dcc.Input(id='price', type="number", placeholder="0.00"),
+
+                html.Button('Track', id='submit-button', n_clicks=0),
             ])
         ]),
-        dcc.Tab(label='Yearly Tansactions', id="yearview", style={'backgroundColor': colors['background'],'color': colors['color']},children=[
-        html.Div([html.H1("Yearly Dashboard"),
-        dcc.Graph(id='graph_by_year', figure={'data': [], 'layout': {}},style={'margin-bottom':'200px'})]),
+
+        dcc.Tab(label='View Expenses', id="viewview", className="dash-tab", children=[
+            html.Div(className='tab-content', children=[
+                dcc.RadioItems(
+                    id='view-selector',
+                    className='radio-items',
+                    options=[
+                        {'label': 'View all expenses', 'value': 'all'},
+                        {'label': 'View monthly expenses by category', 'value': 'monthly'},
+                    ],
+                    value='all'
+                ),
+
+                html.Div(id='expense-table', className='table-container'),
+                html.Div(id='some-output-element'),
+            ])
         ]),
-        dcc.Tab(label='Price based Line Chart ', id="view-line",style={'backgroundColor': colors['background'],'color': colors['color']}, children=[
-        html.Div([html.H1("Price Based Dashboard"),
-        dcc.Graph(id='graph_by_price', figure={'data': [], 'layout': {}},style={'margin-bottom':'200px'})]),
-         ]),         
-        dcc.Tab(label='Category Based Pie Chart', id="catview", style={'backgroundColor': colors['background'], 'color': colors['color']}, children=[
-            html.Div(style={
-                'display': 'flex', 
-                'flexDirection': 'column', 
-                'alignItems': 'center', 
-                'padding': '20px'
-            }, children=[
-                dcc.Graph(id='pie_chart_category', style={
-                    'width': '100%', 
-                    'maxWidth': '700px', 
-                    'height': '400px'
-                })
+
+        dcc.Tab(label='Yearly Transactions', id="yearview", className="dash-tab", children=[
+            html.Div(className='tab-content', children=[
+                html.H1("Yearly Dashboard"),
+                dcc.Graph(id='graph_by_year', className='dash-graph', figure={'data': [], 'layout': {}})
+            ])
+        ]),
+
+        dcc.Tab(label='Price based Line Chart', id="view-line", className="dash-tab", children=[
+            html.Div(className='tab-content', children=[
+                html.H1("Price Based Dashboard"),
+                dcc.Graph(id='graph_by_price', className='dash-graph', figure={'data': [], 'layout': {}})
+            ])
+        ]),
+
+        dcc.Tab(label='Category Based Pie Chart', id="catview", className="dash-tab", children=[
+            html.Div(className='pie-chart-container', children=[
+                dcc.Graph(id='pie_chart_category')
             ])
         ]),
     ])
@@ -318,22 +266,31 @@ def update_graph_by_price(view_selector):
 
 @app.callback(
     Output('expense-table', 'children'),
-    [Input('view-selector', 'value')]
+    [Input('view-selector', 'value'),
+     
+    ]
 )
 def update_expense_table(view_selector):
     conn = get_db()
     cur = conn.cursor()
+
     if view_selector == 'all':
         cur.execute("SELECT * FROM expenses ORDER BY Date DESC")
         expenses = cur.fetchall()
         df = pd.DataFrame(expenses, columns=['ID', 'Date', 'Description', 'Category', 'Price'])
+
+
         if df.empty:
-            return 'No expenses to display.'
-        table = html.Table(
-            [html.Tr([html.Th(column) for column in df.columns])] +
-            [html.Tr([html.Td(expense[column]) for column in df.columns]) for _, expense in df.iterrows()]
-        )
+            return html.Div("No expenses recorded yet.", style={"color": "gray"})
+
+        table = html.Table([
+            html.Tr([html.Th(col) for col in df.columns])
+        ] + [
+            html.Tr([html.Td(row[col]) for col in df.columns]) for _, row in df.iterrows()
+        ])
+
         return table
+
     elif view_selector == 'monthly':
         cur.execute("""SELECT strftime('%m', Date) AS Month, Category, SUM(Price) AS Total
                        FROM expenses
@@ -348,12 +305,15 @@ def update_expense_table(view_selector):
         )
         return table
 
+    return 'Invalid view type.'
+
 @app.callback(
     [Output('some-output-element', 'children'),
      Output('Date', 'value'),
      Output('description', 'value'),
      Output('CATEGORY', 'value'),
-     Output('price', 'value')],
+     Output('price', 'value'),
+     Output('alert-box', 'children')],
     [Input('submit-button', 'n_clicks')],
     [State('Date', 'value'),
      State('description', 'value'),
@@ -361,24 +321,36 @@ def update_expense_table(view_selector):
      State('price', 'value')]
 )
 def handle_form_submission(n_clicks, date, description, category, price):
-    if n_clicks > 0:
+    if n_clicks == 0:
+        raise PreventUpdate
+
+    # Basic validation
+    if not description or not category or price is None:
+        return ("", date, description, category, price, dbc.Alert("All fields are required.", color="warning"))
+
+    try:
         conn = get_db()
         cur = conn.cursor()
         cur.execute("INSERT INTO expenses (Date, description, CATEGORY, price) VALUES (?, ?, ?, ?)",
-            (date, description, category, price))
-
-
+                    (date, description, category, price))
         conn.commit()
-        formatted_message = (
-            
-            f"Recent Expense:<br>"
-            f"Date: {date}<br>"
-            f"Description: {description}<br>"
-            f"Category: {category}<br>"
-            f"Price: {price}"
-        )
-        return (dcc.Markdown(formatted_message, dangerously_allow_html=True), '', '', '', 0)
-    return ("", date, description, category, price)
+    except Exception as e:
+        return ("", date, description, category, price, dbc.Alert(f"Error: {str(e)}", color="danger"))
+
+    formatted_message = (
+        f"Recent Expense:<br>"
+        f"Date: {date}<br>"
+        f"Description: {description}<br>"
+        f"Category: {category}<br>"
+        f"Price: {price}"
+    )
+    return (dcc.Markdown(formatted_message, dangerously_allow_html=True), '', '', '', 0,
+            dbc.Alert("Expense added successfully!", color="success", dismissable=True))
+
+
+
+
+
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run(debug=True)
