@@ -6,5 +6,10 @@ To initiate the main program, finance.py, run one.py beforehand. one.py is respo
 finance.py encompasses the core functionality, incorporating Flask and Dash for the web interface, SQLite for data storage, and Pandas for advanced analysis and calculations.
 For database maintenance, two.py offers functionalities to delete specific IDs from the database or modify it to clear the entire table if required.
 
+### Preview
+
+![Dashboard UI](images/image1.png)
+
+![Pie Chart](images/image2.png)
 
 
